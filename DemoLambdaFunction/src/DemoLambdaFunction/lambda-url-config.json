@@ -3,9 +3,9 @@
   "Cors": {
     "AllowCredentials": false,
     "AllowHeaders": ["*"],
-    "AllowMethods": ["GET"],
+    "AllowMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "AllowOrigins": ["*"],
-    "ExposeHeaders": [],
-    "MaxAge": 0
+    "ExposeHeaders": ["*"],
+    "MaxAge": 3600
   }
 }

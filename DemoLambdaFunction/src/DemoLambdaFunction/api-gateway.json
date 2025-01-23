@@ -5,17 +5,23 @@
     "version": "1.0"
   },
   "paths": {
-    "/": {
-      "get": {
+    "/{proxy+}": {
+      "x-amazon-apigateway-any-method": {
         "produces": [
+          "application/json",
           "text/html"
+        ],
+        "parameters": [
+          {
+            "name": "proxy",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
         ],
         "responses": {
           "200": {
-            "description": "200 response",
-            "schema": {
-              "type": "string"
-            }
+            "description": "200 response"
           }
         },
         "x-amazon-apigateway-integration": {
