@@ -17,26 +17,8 @@ public class Startup
     {
         services.AddControllersWithViews();
         
-        // Build connection string from required environment variables
-        var host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? 
-            throw new InvalidOperationException("POSTGRES_HOST environment variable is not set");
-        var port = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? "5432";
-        var database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? 
-            throw new InvalidOperationException("POSTGRES_DB environment variable is not set");
-        var username = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? 
-            throw new InvalidOperationException("POSTGRES_USER environment variable is not set");
-        var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? 
-            throw new InvalidOperationException("POSTGRES_PASSWORD environment variable is not set");
-            
-        var connectionString = $"Host={host};" +
-                             $"Port={port};" +
-                             $"Database={database};" +
-                             $"Username={username};" +
-                             $"Password={password};" +
-                             "Include Error Detail=true";
-
         services.AddDbContext<SurveyDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
 
         services.AddCors(options =>
         {

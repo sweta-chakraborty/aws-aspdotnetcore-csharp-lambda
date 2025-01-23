@@ -34,11 +34,18 @@ namespace DemoLambdaFunction.Controllers
                 return BadRequest(ModelState);
             }
 
+            // Check if a survey with this email already exists
+            bool emailExists = await _context.SurveyResponses.AnyAsync(s => s.Email == survey.Email);
+            if (emailExists)
+            {
+                return Conflict(new { message = "A survey has already been submitted with this email address. Only one survey submission per email is allowed." });
+            }
+
             survey.SubmittedAt = DateTime.UtcNow;
             _context.SurveyResponses.Add(survey);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Survey submitted successfully" });
+            return Ok(new { message = "Survey submitted successfully", redirectUrl = $"/api/survey/thank-you?{BuildQueryString(survey)}" });
         }
 
         [HttpGet("results")]
@@ -94,6 +101,21 @@ namespace DemoLambdaFunction.Controllers
         {
             var html = System.IO.File.ReadAllText("wwwroot/thank-you.html");
             return Content(html, "text/html");
+        }
+
+        private string BuildQueryString(SurveyResponse survey)
+        {
+            var queryParams = new List<string>
+            {
+                $"name={Uri.EscapeDataString(survey.Name)}",
+                $"email={Uri.EscapeDataString(survey.Email)}",
+                $"roleSatisfaction={Uri.EscapeDataString(survey.RoleSatisfaction)}",
+                $"managerSupport={Uri.EscapeDataString(survey.ManagerSupport)}",
+                $"valueRecognition={Uri.EscapeDataString(survey.ValueRecognition)}",
+                $"growthOpportunities={Uri.EscapeDataString(survey.GrowthOpportunities)}",
+                $"companyRecommendation={Uri.EscapeDataString(survey.CompanyRecommendation)}"
+            };
+            return string.Join("&", queryParams);
         }
     }
 }

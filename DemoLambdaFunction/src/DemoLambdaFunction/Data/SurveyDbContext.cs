@@ -21,6 +21,7 @@ namespace DemoLambdaFunction.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired();
                 entity.Property(e => e.Email).IsRequired();
+                entity.HasIndex(e => e.Email).IsUnique();  // Add unique constraint
                 entity.Property(e => e.RoleSatisfaction).IsRequired();
                 entity.Property(e => e.ManagerSupport).IsRequired();
                 entity.Property(e => e.ValueRecognition).IsRequired();
