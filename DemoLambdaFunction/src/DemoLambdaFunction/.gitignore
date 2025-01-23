@@ -7,6 +7,9 @@ obj/
 appsettings.json
 appsettings.*.json
 !appsettings.template.json
+.env
+*.env
+
 *.Development.json
 *.Production.json
 *.Staging.json
