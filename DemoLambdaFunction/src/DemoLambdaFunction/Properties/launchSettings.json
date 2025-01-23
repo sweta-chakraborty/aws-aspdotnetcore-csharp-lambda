@@ -5,11 +5,11 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "POSTGRES_HOST": "my-postgres-db.cbmgeukk6xnj.us-east-1.rds.amazonaws.com",
+        "POSTGRES_HOST": "Your Postgres DB HOST URL",
         "POSTGRES_PORT": "5432",
-        "POSTGRES_DB": "Survey-DB",
-        "POSTGRES_USER": "postgresadmin",
-        "POSTGRES_PASSWORD": "Admin!2025!2025"
+        "POSTGRES_DB": "Your DB",
+        "POSTGRES_USER": "Your Admin",
+        "POSTGRES_PASSWORD": "Your Password"
       },
       "applicationUrl": "http://localhost:5000"
     }
