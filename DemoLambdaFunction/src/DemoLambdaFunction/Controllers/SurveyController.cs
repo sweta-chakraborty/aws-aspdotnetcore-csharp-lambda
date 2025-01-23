@@ -29,57 +29,80 @@ namespace DemoLambdaFunction.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitSurvey([FromBody] SurveyResponse survey)
         {
-            if (!ModelState.IsValid)
+            try 
             {
-                return BadRequest(ModelState);
-            }
+                Console.WriteLine($"[Survey] Received submission for email: {survey?.Email}");
+                
+                if (!ModelState.IsValid)
+                {
+                    Console.WriteLine("[Survey] Model validation failed");
+                    return BadRequest(ModelState);
+                }
 
-            // Check if a survey with this email already exists
-            bool emailExists = await _context.SurveyResponses.AnyAsync(s => s.Email == survey.Email);
-            if (emailExists)
+                // Check if a survey with this email already exists
+                bool emailExists = await _context.SurveyResponses.AnyAsync(s => s.Email == survey.Email);
+                if (emailExists)
+                {
+                    Console.WriteLine($"[Survey] Duplicate submission for email: {survey.Email}");
+                    return Conflict(new { message = "A survey has already been submitted with this email address. Only one survey submission per email is allowed." });
+                }
+
+                survey.SubmittedAt = DateTime.UtcNow;
+                _context.SurveyResponses.Add(survey);
+                await _context.SaveChangesAsync();
+
+                var redirectUrl = $"/api/survey/thank-you?{BuildQueryString(survey)}";
+                Console.WriteLine($"[Survey] Successfully saved survey. Redirecting to: {redirectUrl}");
+                
+                return Ok(new { message = "Survey submitted successfully", redirectUrl = redirectUrl });
+            }
+            catch (Exception ex)
             {
-                return Conflict(new { message = "A survey has already been submitted with this email address. Only one survey submission per email is allowed." });
+                Console.WriteLine($"[Survey] Error submitting survey: {ex}");
+                return StatusCode(500, new { message = "An error occurred while submitting the survey.", error = ex.Message });
             }
-
-            survey.SubmittedAt = DateTime.UtcNow;
-            _context.SurveyResponses.Add(survey);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Survey submitted successfully", redirectUrl = $"/api/survey/thank-you?{BuildQueryString(survey)}" });
         }
 
         [HttpGet("results")]
         public async Task<IActionResult> GetSurveyResults()
         {
-            var results = await _context.SurveyResponses
-                .OrderByDescending(s => s.SubmittedAt)
-                .ToListAsync();
-
-            var summary = new
+            try
             {
-                roleSatisfaction = results
-                    .GroupBy(s => s.RoleSatisfaction)
-                    .Select(g => new { response = g.Key, count = g.Count() })
-                    .ToList(),
-                managerSupport = results
-                    .GroupBy(s => s.ManagerSupport)
-                    .Select(g => new { response = g.Key, count = g.Count() })
-                    .ToList(),
-                valueRecognition = results
-                    .GroupBy(s => s.ValueRecognition)
-                    .Select(g => new { response = g.Key, count = g.Count() })
-                    .ToList(),
-                growthOpportunities = results
-                    .GroupBy(s => s.GrowthOpportunities)
-                    .Select(g => new { response = g.Key, count = g.Count() })
-                    .ToList(),
-                companyRecommendation = results
-                    .GroupBy(s => s.CompanyRecommendation)
-                    .Select(g => new { response = g.Key, count = g.Count() })
-                    .ToList()
-            };
+                var results = await _context.SurveyResponses
+                    .OrderByDescending(s => s.SubmittedAt)
+                    .ToListAsync();
 
-            return Ok(new { results, summary });
+                var summary = new
+                {
+                    roleSatisfaction = results
+                        .GroupBy(s => s.RoleSatisfaction)
+                        .Select(g => new { response = g.Key, count = g.Count() })
+                        .ToList(),
+                    managerSupport = results
+                        .GroupBy(s => s.ManagerSupport)
+                        .Select(g => new { response = g.Key, count = g.Count() })
+                        .ToList(),
+                    valueRecognition = results
+                        .GroupBy(s => s.ValueRecognition)
+                        .Select(g => new { response = g.Key, count = g.Count() })
+                        .ToList(),
+                    growthOpportunities = results
+                        .GroupBy(s => s.GrowthOpportunities)
+                        .Select(g => new { response = g.Key, count = g.Count() })
+                        .ToList(),
+                    companyRecommendation = results
+                        .GroupBy(s => s.CompanyRecommendation)
+                        .Select(g => new { response = g.Key, count = g.Count() })
+                        .ToList()
+                };
+
+                return Ok(new { results, summary });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting survey results: {ex}");
+                return StatusCode(500, new { message = "An error occurred while retrieving survey results.", error = ex.Message });
+            }
         }
 
         [HttpGet("admin")]
